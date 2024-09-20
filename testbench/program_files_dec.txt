@@ -1,0 +1,14 @@
+../hdl/decryption/ascon_decryption.v
+../hdl/decryption/ascon_dec.v
+../hdl/decryption/fc_dec.v
+../hdl/permutation/ascon_permutation.v
+../hdl/permutation/ascon_permutation_ti.v
+../hdl/permutation/linear_layer.v
+../hdl/permutation/linear_layer_ti.v
+../hdl/permutation/roundconstant.v
+../hdl/permutation/roundconstant_ti.v
+../hdl/permutation/substitution_layer.v
+../hdl/permutation/substitution_layer_ti.v
+../hdl/roundcounter.v
+aead_parameters.v
+tb_decryption.v

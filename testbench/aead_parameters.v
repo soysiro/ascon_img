@@ -1,0 +1,11 @@
+`define k 128
+`define r 64
+`define a 12
+`define b 6
+`define l 40
+`define y 40
+`define KEY 'h9afedeee4dd7d97570e7b269782b595f
+`define NONCE 'hc610b7b06987b0bf3f223e34cb1b23b3
+`define AD 'h4153434f4e
+`define PT 'h6173636f6e
+`define CT 'h6173636f6e
