@@ -7,6 +7,8 @@ module tb_encryption;
     // parameter b = 6;              // Intermediate round no.
     // parameter l = 40;             // Length of associated data
     // parameter y = 40;             // Length of Plain Text
+    // parameter TI = 1;
+    // parameter FP = 1;
 
     parameter PERIOD = 20;          // Clock frequency
     parameter max = (`k>=`y && `k>=`l)? `k: ((`y>=`l)? `y: `l);

@@ -1,6 +1,5 @@
 ../hdl/decryption/ascon_decryption.v
 ../hdl/decryption/ascon_dec.v
-../hdl/decryption/fc_dec.v
 ../hdl/permutation/ascon_permutation.v
 ../hdl/permutation/ascon_permutation_ti.v
 ../hdl/permutation/linear_layer.v
