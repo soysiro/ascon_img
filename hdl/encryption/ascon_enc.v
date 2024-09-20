@@ -13,9 +13,6 @@ module Ascon #(
     input [2:0] associated_dataxSI,
     input [2:0] plain_textxSI,
     input       encryption_startxSI,
-    input [6:0] r_64xSI,
-    input       r_128xSI,
-    input       r_ptxSI,
 
     output reg  cipher_textxSO,
     output reg  tagxSO,
