@@ -4,42 +4,48 @@ module Ascon #(
     parameter a = 12,             // Initialization round no.
     parameter b = 6,              // Intermediate round no.
     parameter l = 32,             // Length of associated data
-    parameter y = 32            // Length of Plain Text
+    parameter y = 32             // Length of Plain Text
 )(
     input       clk,
     input       rst,
     input [2:0] keyxSI,
     input [2:0] noncexSI,
     input [2:0] associated_dataxSI,
-    input [2:0] cipher_textxSI,
-    input       decryption_startxSI,
+    input [2:0] input_dataxSI,
+    input       ascon_startxSI,
+    input       decrypt,
 
-    output reg  plain_textxS0,
-    output reg  tagxSO,      
-    output      decryption_readyxSO     //
+    output reg  output_dataxSO,
+    output reg  tagxSO,
+    output      ascon_readyxSO //
 );
     
     reg     [k-1:0]     key; 
-    reg     [127:0]     nonce;
-    reg     [l-1:0]     associated_data;
-    reg     [y-1:0]     cipher_text;
-    wire    [y-1:0]     plain_text;
+    reg     [127:0]     nonce; 
+    reg     [l-1:0]     associated_data; 
+    reg     [y-1:0]     input_data; 
     reg     [31:0]      i,j;
+    reg                 flag_decrypt,
+    wire    [y-1:0]     output_data;
     wire    [127:0]     tag;
-    wire                ready, decryption_start, decryption_ready;
+    wire                ready, ascon_start, ascon_ready;
+    wire                permutation_ready, permutation_start;
 
     // Left shift for Inputs
     always @(posedge clk) begin
         if(rst)
             {key,
             nonce,
-            associated_data,
-            cipher_text,
+            flag_dec,
             i,j} <= 0;
 
         else begin
             if(i < k) begin
                 key <= {key[k-2:0], keyxSI[0]}; 
+            end
+
+            if (ascon_start) begin 
+                flag_dec <= decrypt;
             end
 
             if(i < 128) begin
@@ -51,16 +57,16 @@ module Ascon #(
             end
 
             if(i < y) begin
-                cipher_text <= {cipher_text[y-2:0], cipher_textxSI[0]};
+                input_data <= {input_data[y-2:0], input_dataxSI[0]};
             end
 
             i <= i+1;
         end
 
-        // Right Shift for decryption outputs
-        if(decryption_ready) begin
+        // Right Shift for encryption outputs
+        if(ascon_ready) begin
             if(j < y)
-                plain_textxS0 <= plain_text[j];
+                output_dataxSO <= output_data[j];
             
             if(j < 128)
                 tagxSO <= tag[j];
@@ -70,22 +76,23 @@ module Ascon #(
     end
 
     assign ready = ((i>k) && (i>128) && (i>l) && (i>y))? 1 : 0;
-    assign decryption_start = ready & decryption_startxSI;
-    assign decryption_readyxSO = decryption_ready;
+    assign ascon_start = ready & ascon_startxSI;
+    assign ascon_readyxSO = ascon_ready;
 
 
-    Decryption #(
+    AsconCore#(
         k,r,a,b,l,y
-    ) d2 (
+    ) d1 (
         clk,
         rst,
-        key,
-        nonce,
+        key, 
+        nonce, 
         associated_data,
-        cipher_text,
-        decryption_start,
-        plain_text,             
-        tag,                     
-        decryption_ready        
+        input_data,
+        ascon_start,
+        flag_dec,
+        output_data,
+        tag,          
+        ascon_ready
     );
 endmodule

@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-module tb_decryption;
+module tb_encdec;
 
     // parameter k = 128;            // Key size
     // parameter r = 64;            // Rate
@@ -47,9 +47,6 @@ module tb_decryption;
         associated_dataxSI,
         cipher_textxSI,
         decryption_startxSI,
-        r_64xSI,
-        r_128xSI,
-        r_ptxSI,
         plain_textxSO,
         tagxSO,
         decryption_readyxSO

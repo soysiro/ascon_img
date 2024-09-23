@@ -1,5 +1,5 @@
-// Encryption FSM
-module Encryption #(
+// Decryption FSM
+module AsconCore#(
     parameter k = 128,            // Key size
     parameter r = 128,            // Rate
     parameter a = 12,             // Initialization round no.
@@ -12,14 +12,14 @@ module Encryption #(
     input  [k-1:0]  key,
     input  [127:0]  nonce,
     input  [l-1:0]  associated_data,
-    input  [y-1:0]  plain_text,
-    input           encryption_start,
+    input  [y-1:0]  input_data,
+    input           ascon_start,
+    input           decrypt;
 
-    output [y-1:0]  cipher_text,            // Plain text converted to cipher text
-    output [127:0]  tag,                    // Final Tag after Encryption 
-    output          encryption_ready        // To indicate the end of Encryption
+    output [y-1:0]  output_data,            // Plain text converted to cipher text
+    output [127:0]  tag,                    // Final Tag after decryption 
+    output          ascon_ready        // To indicate the end of decryption
 );
-
     // Constants
     parameter c = 320-r;
 
@@ -35,7 +35,8 @@ module Encryption #(
     reg  [4:0]          rounds;
     reg  [127:0]        Tag;
     reg  [127:0]        Tag_d;
-    reg                 encryption_ready_1;
+    reg                 ascon_ready_1;
+    wire                flag_dec;
     wire [190-k-1:0]    IV;
     reg  [319:0]        S;
     wire [r-1:0]        Sr;
@@ -45,32 +46,32 @@ module Encryption #(
     wire                permutation_ready;
     reg                 permutation_start;
     wire [L-1:0]        A;
-    wire [Y-1:0]        P;
-    reg  [Y-1:0]        C;
-    reg  [Y-1:0]        C_d;
+    wire [Y-1:0]        C;
+    reg  [Y-1:0]        P;
+    reg  [Y-1:0]        P_d;
     reg  [t:0]          block_ctr;  
     wire [4:0]          ctr;
-    reg [2:0] state;
 
     assign IV = k << 24 | r << 16 | a << 8 | b;
     assign {Sr,Sc} = S;
-    assign encryption_ready = encryption_ready_1;
+    assign ascon_ready = ascon_ready_1;
     assign A = {associated_data, 1'b1, {nz_ad{1'b0}}};
-    assign P = {plain_text, 1'b1, {nz_p{1'b0}}};
-    assign tag = (encryption_ready_1)? Tag : 0;
+    assign C = {input_data, 1'b1, {nz_p{1'b0}}};
+    assign tag = (ascon_ready_1)? Tag : 0;
+    assign flag_dec = decrypt;
     if(y>0)
-        assign cipher_text = (encryption_ready_1)? C[Y-1 : Y-y] : 0;
+        assign output_data = (ascon_ready_1)? P[Y-1 : Y-y] : 0;
     else
-        assign cipher_text = 0;
-    assign state_1 = state;
+        assign output_data = 0;
 
     // FSM States
     parameter IDLE              = 'd0,
               INITIALIZE        = 'd1,
               ASSOCIATED_DATA   = 'd2,
-              PTCT              = 'd3,
+              CTPT              = 'd3,
               FINALIZE          = 'd4, 
               DONE              = 'd5;  
+    reg [2:0] state;
 
     // ---------------------------------------------------------------------------------------
     //                               FSM Starts here
@@ -82,7 +83,7 @@ module Encryption #(
             state <= IDLE;
             S <= 0;
             Tag <= 0;
-            C <= 0;
+            P <= 0;
             block_ctr <= 0;
             // $display(L, s, nz_ad);
         end
@@ -92,7 +93,7 @@ module Encryption #(
                 // IDLE Stage
                 IDLE: begin
                     S <= {IV, {(160-k){1'b0}}, key, nonce};
-                    if(encryption_start)
+                    if(ascon_start)
                         state <= INITIALIZE;
                 end
 
@@ -102,7 +103,7 @@ module Encryption #(
                         if (l != 0)
                             state <= ASSOCIATED_DATA;
                         else if (l == 0 && y != 0)
-                            state <= PTCT;
+                            state <= CTPT;
                         else
                             state <= FINALIZE;
                         S <= P_out ^ {{(320-k){1'b0}}, key};
@@ -113,7 +114,7 @@ module Encryption #(
                 ASSOCIATED_DATA: begin
                     if(permutation_ready && block_ctr == s-1) begin
                         if (y != 0)
-                            state <= PTCT;
+                            state <= CTPT;
                         else
                             state <= FINALIZE;
                         S <= P_out^({{319{1'b0}}, 1'b1});
@@ -129,15 +130,22 @@ module Encryption #(
                 end
 
                 // Processing Plain Text
-                PTCT: begin
+                CTPT: begin
                     if(block_ctr == t-1) begin
                         state <= FINALIZE;
-                        S <= {C_d[r-1:0],Sc};
-                        C <= C + C_d;
+                        if (flag_dec) begin
+                            if (y > 0 && y%r != 0) 
+                                S <= {(Sr ^ {P_d[r-1 -: y%r], 1'b1, {(r-1-y%r){1'b0}}}), Sc};
+                            else if (y > 0 && y%r == 0)
+                                S <= {(Sr ^ {1'b0, 1'b1, {(r-1-y%r){1'b0}}}), Sc};
+                        end else begin
+                            S <= {P_d[r-1:0],Sc};
+                        end
+                        P <= P + P_d;
                     end
                     else if(permutation_ready && block_ctr != t) begin
                         S <= P_out;
-                        C <= C + C_d;
+                        P <= P + P_d;
                     end
 
                     if (permutation_ready && block_ctr == t-1) 
@@ -157,7 +165,7 @@ module Encryption #(
 
                 // Done Stage
                 DONE: begin
-                    if(encryption_start)
+                    if(ascon_start)
                         state <= IDLE;
                 end
 
@@ -170,31 +178,31 @@ module Encryption #(
 
     // Combinational Block
     always @(*) begin
-        C_d = 0;
+        P_d = 0;
         Tag_d = 0;
-        encryption_ready_1 = 0;
+        ascon_ready_1 = 0;
         case (state)
             IDLE: begin
-                C_d = 0;
+                P_d = 0;
                 Tag_d = 0;
-                encryption_ready_1 = 0;
+                ascon_ready_1 = 0;
                 permutation_start = 0;
                 rounds = a;
                 P_in = S;
             end
 
             INITIALIZE: begin
-                C_d = 0;
+                P_d = 0;
                 Tag_d = 0;
-                encryption_ready_1 = 0;
+                ascon_ready_1 = 0;
                 rounds = a;
                 permutation_start = (permutation_ready)? 1'b0: 1'b1;
                 P_in = S;
             end
             
             ASSOCIATED_DATA: begin
-                C_d = 0;
-                encryption_ready_1 = 0;
+                P_d = 0;
+                ascon_ready_1 = 0;
                 rounds = b;
                 Tag_d = 0;
                 if(permutation_ready && block_ctr == (s-1))
@@ -205,12 +213,17 @@ module Encryption #(
                 P_in = {Sr^A[L-1-(block_ctr*r)-:r], Sc};
             end
 
-            PTCT: begin
-                encryption_ready_1 = 0;
+            CTPT: begin
+                ascon_ready_1 = 0;
                 rounds = b;
                 Tag_d = 0;
-                C_d[Y-1-(block_ctr*r)-:r] = Sr ^ P[Y-1-(block_ctr*r)-:r];
-                P_in = {Sr ^ P[Y-1-(block_ctr*r)-:r], Sc};
+                P_d[Y-1-(block_ctr*r)-:r] = Sr ^ C[Y-1-(block_ctr*r)-:r];
+                if (flag_dec) begin
+                    P_in = {C[Y-1-(block_ctr*r)-:r], Sc};
+                end else begin
+                    P_in = {Sr ^ C[Y-1-(block_ctr*r)-:r], Sc};
+                end
+
                 if(block_ctr == (t-1))
                     permutation_start = 0;
                 else
@@ -218,21 +231,21 @@ module Encryption #(
             end
 
             FINALIZE: begin
-                C_d = 0;
+                P_d = 0;
                 rounds = a;
                 P_in = S ^ ({{r{1'b0}},key,{(c-k){1'b0}}});
                 permutation_start = (permutation_ready)? 1'b0: 1'b1;
-                encryption_ready_1 = 1'b0;
+                ascon_ready_1 = 0;
                 Tag_d = P_out ^ key;
             end
 
             DONE: begin
                 Tag_d = 0;
-                C_d = 0;
+                P_d = 0;
                 rounds = a;
                 P_in = 0;
                 permutation_start = 0;
-                encryption_ready_1 = 1;
+                ascon_ready_1 = 1;
             end
 
             default: begin
@@ -240,8 +253,8 @@ module Encryption #(
                 rounds = 0;
                 P_in = S;
                 permutation_start = 0;
-                encryption_ready_1 = 0;
-                C_d = 0;
+                ascon_ready_1 = 0;
+                P_d = 0;
             end
         endcase
     end
@@ -257,7 +270,7 @@ module Encryption #(
         .rounds(rounds),
         .start(permutation_start)
     );
-
+    
     // Round Counter
     RoundCounter RC(
         clk,
@@ -266,9 +279,9 @@ module Encryption #(
         permutation_ready,
         ctr
     );
-    
+
      //Debugger
      always @(posedge clk or posedge rst) begin
           $display("State: %d counter: %d block_ctr: %d \n S: %h \n start: %b ready: %b", state, ctr, block_ctr, S, permutation_start, permutation_ready);
      end
-endmodule
+endmodule   

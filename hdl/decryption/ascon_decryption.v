@@ -268,8 +268,8 @@ module Decryption #(
         ctr
     );
 
-    // Debugger
-    // always @(posedge clk or posedge rst) begin
-    //     // $display("State: %d counter: %d block_ctr: %d \n S: %h \n start: %b ready: %b", state, ctr, block_ctr, S, permutation_start, permutation_ready);
-    // end
+     //Debugger
+     always @(posedge clk or posedge rst) begin
+          $display("State: %d counter: %d block_ctr: %d \n S: %h \n start: %b ready: %b", state, ctr, block_ctr, S, permutation_start, permutation_ready);
+     end
 endmodule   

@@ -47,9 +47,6 @@ module tb_encryption;
         associated_dataxSI,
         plain_textxSI,
         encryption_startxSI,
-        r_64xSI,
-        r_128xSI,
-        r_ptxSI,
         cipher_textxSO,
         tagxSO,
         encryption_readyxSO
