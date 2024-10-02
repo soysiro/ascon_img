@@ -25,7 +25,7 @@ module Ascon #(
     reg     [l-1:0]     associated_data; 
     reg     [y-1:0]     input_data; 
     reg     [31:0]      i,j;
-    reg                 flag_decrypt,
+    reg                 flag_dec;
     wire    [y-1:0]     output_data;
     wire    [127:0]     tag;
     wire                ready, ascon_start, ascon_ready;

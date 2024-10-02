@@ -14,7 +14,7 @@ module AsconCore#(
     input  [l-1:0]  associated_data,
     input  [y-1:0]  input_data,
     input           ascon_start,
-    input           decrypt;
+    input           decrypt,
 
     output [y-1:0]  output_data,            // Plain text converted to cipher text
     output [127:0]  tag,                    // Final Tag after decryption 
@@ -281,7 +281,7 @@ module AsconCore#(
     );
 
      //Debugger
-     always @(posedge clk or posedge rst) begin
-          $display("State: %d counter: %d block_ctr: %d \n S: %h \n start: %b ready: %b", state, ctr, block_ctr, S, permutation_start, permutation_ready);
-     end
+     //always @(posedge clk or posedge rst) begin
+          //$display("State: %d counter: %d block_ctr: %d \n S: %h \n start: %b ready: %b", state, ctr, block_ctr, S, permutation_start, permutation_ready);
+     //end
 endmodule   
