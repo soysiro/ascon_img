@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-module tb_encdec;
+module tb_decryption;
 
     // parameter k = 128;            // Key size
     // parameter r = 64;            // Rate
@@ -20,10 +20,11 @@ module tb_encdec;
     reg [2:0] associated_dataxSI;
     reg [2:0] cipher_textxSI;
     reg       decryption_startxSI;
-    reg       decrypt;
-
+    reg [6:0] r_64xSI;
+    reg       r_128xSI;
+    reg       r_ptxSI;
     integer ctr = 0;
-    reg [`y-1:0] cipher_text, plain_text;
+    reg [`y-1:0] plain_text;
     reg [127:0] tag;
 
     wire  plain_textxSO;
@@ -46,7 +47,9 @@ module tb_encdec;
         associated_dataxSI,
         cipher_textxSI,
         decryption_startxSI,
-        decrypt,
+        r_64xSI,
+        r_128xSI,
+        r_ptxSI,
         plain_textxSO,
         tagxSO,
         decryption_readyxSO
@@ -59,7 +62,7 @@ module tb_encdec;
     input [max-1:0] rd, i, key, nonce, ass_data, ct; 
     begin
         @(posedge clk);
-        {keyxSI[2:1], associated_dataxSI[2:1], cipher_textxSI[2:1], noncexSI[2:1]} = rd;
+        {r_128xSI, r_ptxSI, r_64xSI, keyxSI[2:1], associated_dataxSI[2:1], cipher_textxSI[2:1], noncexSI[2:1]} = rd;
         keyxSI[0] = key[`k-1-i];
         noncexSI[0] = nonce[127-i];
         cipher_textxSI[0] = ct[`y-1-i];
@@ -67,7 +70,7 @@ module tb_encdec;
     end
     endtask
 
-    task read_dec;
+    task read;
     input integer i;
     begin
         @(posedge clk);
@@ -76,41 +79,10 @@ module tb_encdec;
     end
     endtask
 
-
-    task read_enc;
-    input integer i;
-    begin
-        @(posedge clk);
-        cipher_text[i] = plain_textxSO;
-        tag[i] = tagxSO;
-    end
-    endtask
-
     initial begin
         $dumpfile("test.vcd");
         $dumpvars;
         $display("Start!");
-        decrypt = 0;
-        rst = 1;
-        #(1.5*PERIOD)
-        rst = 0;
-        ctr = 0;
-        repeat(max) begin
-            write($random, ctr, `KEY, `NONCE, `AD, `PT);
-            ctr = ctr + 1;
-        end
-        ctr = 0;
-        decryption_startxSI = 1;
-        check_time = $time;
-        #(0.5*PERIOD)
-        $display("Key:\t%h", uut.key);
-        $display("Nonce:\t%h", uut.nonce);
-        $display("AD:\t%h", uut.associated_data);
-        $display("PT:\t%h", uut.input_data);
-        #(4.5*PERIOD)
-        decryption_startxSI = 0;
-
-        decrypt = 1;
         rst = 1;
         #(1.5*PERIOD)
         rst = 0;
@@ -126,36 +98,23 @@ module tb_encdec;
         $display("Key:\t%h", uut.key);
         $display("Nonce:\t%h", uut.nonce);
         $display("AD:\t%h", uut.associated_data);
-        $display("CT:\t%h", uut.input_data);
+        $display("CT:\t%h", uut.cipher_text);
         #(4.5*PERIOD)
         decryption_startxSI = 0;
     end
 
     always @(*) begin
         if(decryption_readyxSO) begin
-            if (decrypt) begin
-                check_time = $time - check_time;
-                $display("Decryption Done! It took%d clock cycles", check_time/(2*PERIOD));
-                #(4*PERIOD)
-                repeat(max) begin
-                    read_dec(ctr);
-                    ctr = ctr + 1;
-                end
-                $display("PT:\t%h", plain_text);
-                $display("Tag:\t%h", tag);
-                $finish;
-            end else begin
-                check_time = $time - check_time;
-                $display("Encryption Done! It took%d clock cycles", check_time/(2*PERIOD));
-                #(4*PERIOD)
-                repeat(max) begin
-                    read_enc(ctr);
-                    ctr = ctr + 1;
-                end
-                $display("CT:\t%h", cipher_text);
-                $display("Tag:\t%h", tag);
-                //$finish;
+            check_time = $time - check_time;
+            $display("Decryption Done! It took%d clock cycles", check_time/(2*PERIOD));
+            #(4*PERIOD)
+            repeat(max) begin
+                read(ctr);
+                ctr = ctr + 1;
             end
+            $display("PT:\t%h", plain_text);
+            $display("Tag:\t%h", tag);
+            $finish;
         end
     end
 endmodule

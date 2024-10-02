@@ -1,6 +1,5 @@
-../hdl/ascon/ascon_encryption.v
-../hdl/ascon/ascon_decryption.v
-../hdl/ascon/ascon_enc.v
+../hdl/ascon/ascon_core.v
+../hdl/ascon/ascon.v
 ../hdl/permutation/ascon_permutation.v
 ../hdl/permutation/ascon_permutation_ti.v
 ../hdl/permutation/linear_layer.v
