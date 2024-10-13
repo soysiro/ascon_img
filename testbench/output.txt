@@ -1,0 +1,19 @@
+VCD info: dumpfile test.vcd opened for output.
+Start!
+Start encryption!
+Key:	36a7c5dfb07602d03d900ea72d908cd6
+Nonce:	02c42f30370938dc6a3d3a63d94bd18c
+AD:	4153434f4e
+PT:	6173636f6e2d756e6963617373
+Encryption Done! It took         47 clock cycles
+CT:	18490112f8d5867a830748390b
+Tag:	c3ae09155492690c9b2ec3cb7031432c
+Start decryption!
+Key:	6d4f8bbf60ec05a07b201d4e5b2119ac
+Nonce:	05885e606e1271b8d47a74c7b297a318
+AD:	4153434f4e
+CT:	18490112f8d5867a830748390b
+Decryption Done! It took         47 clock cycles
+PT:	6173636f6e2d756e6963617373
+Tag:	c3ae09155492690c9b2ec3cb7031432c
+tb_encdec.v:149: $finish called at 27420 (1ns)

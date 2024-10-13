@@ -15,10 +15,10 @@ module tb_encdec;
 
     reg       clk = 0;
     reg       rst;
-    reg [2:0] keyxSI;
-    reg [2:0] noncexSI;
-    reg [2:0] associated_dataxSI;
-    reg [2:0] cipher_textxSI;
+    reg       keyxSI;
+    reg       noncexSI;
+    reg       associated_dataxSI;
+    reg       cipher_textxSI;
     reg       decryption_startxSI;
     reg       decrypt;
 
@@ -59,11 +59,10 @@ module tb_encdec;
     input [max-1:0] rd, i, key, nonce, ass_data, ct; 
     begin
         @(posedge clk);
-        {keyxSI[2:1], associated_dataxSI[2:1], cipher_textxSI[2:1], noncexSI[2:1]} = rd;
-        keyxSI[0] = key[`k-1-i];
-        noncexSI[0] = nonce[127-i];
-        cipher_textxSI[0] = ct[`y-1-i];
-        associated_dataxSI[0] = ass_data[`l-1-i];
+        keyxSI = key[`k-1-i];
+        noncexSI = nonce[127-i];
+        cipher_textxSI = ct[`y-1-i];
+        associated_dataxSI = ass_data[`l-1-i];
     end
     endtask
 
@@ -90,6 +89,8 @@ module tb_encdec;
         $dumpfile("test.vcd");
         $dumpvars;
         $display("Start!");
+
+        $display("Start encryption!");
         decrypt = 0;
         rst = 1;
         #(1.5*PERIOD)
@@ -102,7 +103,6 @@ module tb_encdec;
         ctr = 0;
         decryption_startxSI = 1;
         check_time = $time;
-        #(0.5*PERIOD)
         $display("Key:\t%h", uut.key);
         $display("Nonce:\t%h", uut.nonce);
         $display("AD:\t%h", uut.associated_data);
@@ -110,9 +110,12 @@ module tb_encdec;
         #(4.5*PERIOD)
         decryption_startxSI = 0;
 
+        #(500*PERIOD)
+
+        $display("Start decryption!");
         decrypt = 1;
         rst = 1;
-        #(1.5*PERIOD)
+        #(2.5*PERIOD)
         rst = 0;
         ctr = 0;
         repeat(max) begin
@@ -133,7 +136,7 @@ module tb_encdec;
 
     always @(*) begin
         if(decryption_readyxSO) begin
-            if (decrypt) begin
+            if (uut.flag_dec) begin
                 check_time = $time - check_time;
                 $display("Decryption Done! It took%d clock cycles", check_time/(2*PERIOD));
                 #(4*PERIOD)
