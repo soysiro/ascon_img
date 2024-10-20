@@ -85,7 +85,7 @@ module tb_encdec;
     end
     endtask
 
-    initial begin
+    initial begin   
         $dumpfile("test.vcd");
         $dumpvars;
         $display("Start!");
