@@ -1,0 +1,22 @@
+$date
+	Sat Feb  8 12:16:11 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module read_image $end
+$var integer 32 ! count [31:0] $end
+$var integer 32 " i [31:0] $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b1010001100110 "
+b1010001100101 !
+$end

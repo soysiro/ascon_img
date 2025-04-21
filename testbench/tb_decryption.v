@@ -106,7 +106,7 @@ module tb_decryption;
     always @(*) begin
         if(decryption_readyxSO) begin
             check_time = $time - check_time;
-            $display("Decryption Done! It took%d clock cycles", check_time/(2*PERIOD));
+            $display("Decryption Done! It took%d clock cycles", check_time);
             #(4*PERIOD)
             repeat(max) begin
                 read(ctr);

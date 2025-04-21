@@ -1,5 +1,5 @@
 module sub_layer #(
-    parameter TYPE = 1
+    parameter TYPE = 0
 ) (
     input [63:0] x0, x1, x2, x3, x4,
     output [63:0] sl0, sl1, sl2, sl3, sl4

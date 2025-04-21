@@ -1,0 +1,8 @@
+../hdl/ascon/ascon_core.v
+../hdl/ascon/ascon.v
+../hdl/permutation/linear_layer.v
+../hdl/permutation/roundconstant.v
+../hdl/permutation/substitution_layer.v
+../hdl/roundcounter.v
+aead_parameters.v
+tb_encdec.v

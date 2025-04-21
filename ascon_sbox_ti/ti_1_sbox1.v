@@ -1,4 +1,4 @@
-module sub_layer_ti (
+module sub_layer (
     input x0_0,x1_0,x2_0,x3_0,x4_0,
     input x0_1,x1_1,x2_1,x3_1,x4_1,
     input x0_2,x1_2,x2_2,x3_2,x4_2,

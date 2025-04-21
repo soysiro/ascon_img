@@ -1,11 +1,11 @@
 // Decryption FSM
 module AsconCore#(
     parameter k = 128,            // Key size
-    parameter r = 128,            // Rate
+    parameter r = 64,            // Rate
     parameter a = 12,             // Initialization round no.
     parameter b = 6,              // Intermediate round no.
     parameter l = 40,            // Length of associated data
-    parameter y = 40             // Length of Plain Text
+    parameter y = 64             // Length of Plain Text
 )(
     input           clk,
     input           rst,

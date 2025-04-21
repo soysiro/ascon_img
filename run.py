@@ -35,8 +35,8 @@ def load_data_aead(ad="ASCON", pt="ascon", ct="ascon"):
 
 # AEAD Data
 associateddata = b"ASCON"
-plaintext      = b"ascon-unicass"
-ciphertext     = b"ascon-unicass"
+plaintext      = b"a"*16
+ciphertext     = b"a"*16
 
 
 load_data_aead(associateddata,plaintext,ciphertext)

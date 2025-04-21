@@ -3,9 +3,9 @@
 `define a 12
 `define b 6
 `define l 40
-`define y 104
-`define KEY 'h6d4f8bbf60ec05a07b201d4e5b2119ac
-`define NONCE 'h05885e606e1271b8d47a74c7b297a318
+`define y 128
+`define KEY 'h716ca070049d4a412bbc36c20fbac84e
+`define NONCE 'h29689789c297191f211664fa7053ba8b
 `define AD 'h4153434f4e
-`define PT 'h6173636f6e2d756e6963617373
-`define CT 'h18490112f8d5867a830748390b
+`define PT 'h61616161616161616161616161616161
+`define CT 'hbee4af09acbe906c10201fa22809651c
